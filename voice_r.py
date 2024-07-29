@@ -4,13 +4,26 @@ import csv
 import threading
 from datetime import datetime
 import pyttsx3
-import os
-import sys
+from os import path
+from sys import argv
+from json import load
 
-from pathlib import Path
 
 ctk.set_appearance_mode("System")        
 recognizer = sr.Recognizer()
+
+with open(path.dirname(path.realpath(argv[0])) + '\\' + 'config.json') as file:
+    json_data = load(file)
+
+
+recognizer.energy_threshold = json_data['recognizer.energy_threshold']
+recognizer.dynamic_energy_adjustment_ratio = json_data['r.dynamic_energy_adjustment_ratio']
+recognizer.pause_threshold = json_data['r.pause_threshold']
+if json_data['recognizer.dynamic_energy_threshold'] == 'True':
+    recognizer.dynamic_energy_threshold = True
+elif json_data['recognizer.dynamic_energy_threshold'] == 'False':
+    recognizer.dynamic_energy_threshold = False
+
 
 class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
@@ -46,7 +59,7 @@ class App(ctk.CTk):
 
 
     def load_csv_to_dict(self):
-        file = os.path.dirname(os.path.realpath(sys.argv[0])) + '\\' + 'samples.csv'
+        file = path.dirname(path.realpath(argv[0])) + '\\' + 'samples.csv'
 
 
         with open(file, 'r', encoding='UTF=8') as data:
@@ -61,18 +74,19 @@ class App(ctk.CTk):
                     with sr.Microphone() as source:
                         
                         recognizer.adjust_for_ambient_noise(source, duration=0.5)
-                        audio = recognizer.listen(source)
+
+                        audio = recognizer.listen(source, phrase_time_limit=None)
 
                         text = recognizer.recognize_google(audio, language="pl-PL")
                         
                         for key in self.samples_dictionary.keys():
-                            if key == text:
+                            if key == text.lower():
                                 self.samples_dictionary[key] += 1
-                                self.label02.configure(text=f"{text} + 1")
+                                self.label02.configure(text=f"{text.lower()} + 1")
 
                                 threading.Timer(2, self.label_reset).start()
 
-                                self.do_backup(text)
+                                self.do_backup(text.lower())
 
                                 if self.check_var.get() == 1:            
                                     self.engine.say('saved')
@@ -88,8 +102,7 @@ class App(ctk.CTk):
                     self.label02.configure(text="Nierozpoznany wynik")
                     threading.Timer(2, self.label_reset).start()
                     
-                    
-            
+                           
 
     def startrecording(self):
         self.rec_button.configure(state='disabled')
@@ -109,7 +122,7 @@ class App(ctk.CTk):
 
 
     def do_backup(self, data):
-        file = os.path.dirname(os.path.realpath(sys.argv[0])) + '\\' + 'backup.txt'
+        file = path.dirname(path.realpath(argv[0])) + '\\' + 'backup.txt'
 
         file = open(file, 'a', encoding="utf-8")
         now = datetime.now()
@@ -121,7 +134,7 @@ class App(ctk.CTk):
 
 
     def save_to_csv(self):
-        file = os.path.dirname(os.path.realpath(sys.argv[0])) + '\\' + 'samples.csv'
+        file = path.dirname(path.realpath(argv[0])) + '\\' + 'samples.csv'
 
         with open(file, 'w', encoding="utf-8", newline='') as csv_file: 
 

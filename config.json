@@ -1,0 +1,6 @@
+{
+    "recognizer.energy_threshold" : 1000,
+    "r.dynamic_energy_adjustment_ratio" : 1.8,
+    "r.pause_threshold" : 0.6,
+    "recognizer.dynamic_energy_threshold" : "True"
+}
