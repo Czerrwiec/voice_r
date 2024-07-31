@@ -1,5 +1,6 @@
 import speech_recognition as sr
 import customtkinter as ctk
+from CTkMessagebox import CTkMessagebox
 import csv
 import threading
 from datetime import datetime
@@ -61,11 +62,16 @@ class App(ctk.CTk):
     def load_csv_to_dict(self):
         file = path.dirname(path.realpath(argv[0])) + '\\' + 'samples.csv'
 
-
-        with open(file, 'r', encoding='UTF=8') as data:
-            lists_of_samples = csv.reader(data)
-            for item in lists_of_samples:
-                self.samples_dictionary[item[0]] = int(item[1])
+        try:
+            with open(file, 'r', encoding='UTF=8') as data:
+                lists_of_samples = csv.reader(data)
+                for item in lists_of_samples:
+                    self.samples_dictionary[item[0]] = int(item[1])
+        except: 
+            FileNotFoundError
+            self.samples_dictionary = {"sample" : 0}
+            self.save_to_csv()
+            CTkMessagebox(title="Info", message="Dodano plik samples.csv, zamknij program i uzupełnij plik.")
 
    
     def record_text(self):
@@ -149,6 +155,7 @@ class App(ctk.CTk):
 
 
 if __name__ == "__main__":
-    app = App()
-    app.load_csv_to_dict()
+    app = App()   
+    app.load_csv_to_dict()     
     app.mainloop()  
+    
